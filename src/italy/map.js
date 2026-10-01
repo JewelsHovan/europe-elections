@@ -1,0 +1,46 @@
+(() => {
+'use strict';
+const D=JSON.parse(document.getElementById('elec-data').textContent);
+const G=JSON.parse(document.getElementById('geo-data').textContent);
+const by=Object.fromEntries(D.map(d=>[d.c,d]));
+const state={layer:'proj',party:'M5S',right:41,broad:43.6,shift:0,selected:null,preset:'Average (29 Sep)'};
+const C={right:'#2f57a0',broad:'#c4483d',neutral:'#817d86',close:'#9b72ba'};
+const fmt=n=>n.toFixed(1)+'%';
+const signed=n=>(n>0?'+':'')+n.toFixed(1);
+const gap=d=>d.special?null:(d.cd+state.right-43.8+state.shift)-(d.cs+d.m5+state.broad-41.6-state.shift);
+const rr=d=>d.cd+state.right-43.8+state.shift;
+const bb=d=>d.cs+d.m5+state.broad-41.6-state.shift;
+const cmp=v=>v>0?'Centre-right':v<0?'Broad opposition':'Tie';
+const grad=v=>v===null?C.neutral:v>8?'#1f3f7a':v>4?'#3f68b0':v>0?'#9db6e0':v>-4?'#efa79e':v>-8?'#d05a4e':'#932a22';
+const bins=(value,cuts,colors)=>{let i=0;while(i<cuts.length&&value>=cuts[i])i++;return colors[i]};
+const layers={
+ proj:{label:'Projection',color:d=>grad(gap(d)),description:'Projected coalition-vote gap using national shifts from 2022. Aosta cannot be compared.',value:d=>d.special?'Special ballot':`${cmp(gap(d))} by ${Math.abs(gap(d)).toFixed(1)} pts`,legend:[['#1f3f7a','Right +8 pts'],['#3f68b0','Right +4 to 8'],['#9db6e0','Right +0 to 4'],['#efa79e','Broad +0 to 4'],['#d05a4e','Broad +4 to 8'],['#932a22','Broad +8 pts'],[C.neutral,'Aosta: separate ballot']]},
+ battle:{label:'Battlegrounds',color:d=>d.special?C.neutral:Math.abs(gap(d))<=4?C.close:Math.abs(gap(d))<=8?'#c2a4d6':gap(d)>0?'#2a4a8a':'#a33a30',description:'Purple: within 4 points now; pale purple: can change leader under a ±4-point national right swing (±8-point gap). This is not a constituency-seat map.',value:d=>d.special?'Special ballot':`${Math.abs(gap(d)).toFixed(1)}-point gap; ${Math.abs(gap(d))<=8?'within swing range':'outside swing range'}`,legend:[[C.close,'Gap at most 4 pts'],['#c2a4d6','Flips within ±4-pt right swing'],['#2a4a8a','Right outside range'],['#a33a30','Broad outside range'],[C.neutral,'Aosta']]},
+ actual:{label:'2022 result',color:d=>d.actual==='Centre-right'?C.right:d.actual==='M5S'?C.broad:C.neutral,description:'Actual 2022 leading ticket against separately running competitors, not the hypothetical combined opposition. Colour intensity does not encode vote size.',value:d=>`${d.actual} by ${d.am.toFixed(1)} pts`,legend:[[C.right,'Centre-right'],[C.broad,'M5S'],[C.neutral,'Autonomists (Aosta)']]},
+ party:{label:'Party shares',color:d=>{let v=d.parties?.[state.party];return v===undefined?C.neutral:bins(v,[7,12,20,30],['#e3ebf1','#b6cce1','#759fc9','#376a9c','#19426e'])},description:'2022 Camera regional list-vote share for the selected party. Aosta had no proportional party ballot.',value:d=>d.special?'No comparable list vote':`${state.party} ${fmt(d.parties[state.party])}`,legend:[['#e3ebf1','Under 7%'],['#b6cce1','7–12'],['#759fc9','12–20'],['#376a9c','20–30'],['#19426e','30%+'],[C.neutral,'Aosta']]},
+ change:{label:'2018 → 2022',color:d=>d.special?C.neutral:bins(d.cd-d.cd18,[0,4,8,12],['#327a73','#a8d0c6','#b1b8d5','#6378b6','#243c81']),description:'Centre-right coalition list-vote change, 2018 to 2022, in percentage points (not a current polling swing). Aosta excluded.',value:d=>d.special?'Not comparable':`right ${signed(d.cd-d.cd18)} pts`,legend:[['#327a73','Fell'],['#a8d0c6','Rose 0–4'],['#b1b8d5','Rose 4–8'],['#6378b6','Rose 8–12'],['#243c81','Rose 12+'],[C.neutral,'Aosta']]}
+};
+const map=document.getElementById('map'), paths=[...document.querySelectorAll('#shapes path')], tip=document.getElementById('tip'), layerbox=document.getElementById('layers');
+for(const [key,L] of Object.entries(layers)) {const b=document.createElement('button');b.type='button';b.textContent=L.label;b.dataset.layer=key;b.addEventListener('click',()=>{state.layer=key;render()});layerbox.append(b)}
+const partySelect=document.createElement('select');partySelect.id='party';partySelect.setAttribute('aria-label','Party to show');
+for(const name of ['FdI','PD','M5S','Lega','FI','AVS','Action–IV']){const o=document.createElement('option');o.value=name;o.textContent=name;partySelect.append(o)}
+partySelect.value=state.party;partySelect.addEventListener('change',()=>{state.party=partySelect.value;render()});layerbox.append(partySelect);
+const pick=document.getElementById('pick');
+for(const d of [...D].sort((a,b)=>a.n.localeCompare(b.n,'it'))){const o=document.createElement('option');o.value=d.c;o.textContent=d.n;pick.append(o)}
+pick.addEventListener('change',()=>select(pick.value||null));
+for(const b of document.querySelectorAll('[data-preset]'))b.addEventListener('click',()=>{const [r,l]=b.dataset.preset.split(',').map(Number);state.right=r;state.broad=l;state.shift=0;document.getElementById('swing').value=0;state.preset=b.textContent;state.layer='proj';render()});
+document.getElementById('swing').addEventListener('input',e=>{state.shift=+e.target.value;render()});
+function select(c){state.selected=c;pick.value=c||'';for(const p of paths)p.classList.toggle('sel',p.dataset.c===c);renderPanel()}
+map.addEventListener('click',e=>{const c=e.target.dataset.c;if(c)select(c===state.selected?null:c)});
+map.addEventListener('mousemove',e=>{const d=by[e.target.dataset.c];if(!d){tip.hidden=true;return}tip.textContent=d.n+': '+layers[state.layer].value(d);tip.hidden=false;const rect=document.getElementById('mapwrap').getBoundingClientRect();tip.style.left=Math.max(0,Math.min(rect.width-195,e.clientX-rect.left+9))+'px';tip.style.top=(e.clientY-rect.top+10)+'px'});
+map.addEventListener('mouseleave',()=>{tip.hidden=true});
+const pair=(label,n)=>`<div><dt>${label}</dt><dd>${fmt(n)}</dd></div>`;
+function renderPanel(){const d=by[state.selected],p=document.getElementById('panel');if(!d){const within=D.filter(r=>!r.special&&Math.abs(gap(r))<=8);p.innerHTML=`<h3>${state.preset}</h3><p>Right ${fmt(state.right+state.shift)} · broad ${fmt(state.broad-state.shift)} nationally</p><p><strong>${within.length} of 19</strong> comparable regions are inside the ±4-point right-swing range. This count is not seats.</p><p class="muted small">Tap a region or use the selector for its full record.</p>`;return}
+ if(d.special){p.innerHTML=`<h3>${d.n}</h3><p>${d.note}</p><p class="detail-note">A separate single-member ballot with autonomist alliances: no regional projection, party-list or 2018 comparison.</p><button type="button" id="clear">Clear selection</button>`}else{
+  const g=gap(d);p.innerHTML=`<h3>${d.n}</h3><p>Actual 2022 leading ticket: <strong>${d.actual}</strong>, ahead by ${d.am.toFixed(1)} points.</p><h4>2022 Camera list vote</h4><dl>${pair('Centre-right total',d.cd)}${pair('Centre-left allies',d.cs)}${pair('M5S (separate)',d.m5)}${pair('Action–Italia Viva (separate)',d.iv)}${Object.entries(d.parties).map(([k,v])=>pair(k,v)).join('')}</dl><h4>Retrospective comparison</h4><dl>${pair('Broad = centre-left + M5S',d.cs+d.m5)}<div><dt>Right − broad, 2022</dt><dd>${signed(d.cd-d.cs-d.m5)} pts</dd></div><div><dt>Right 2018 → 2022</dt><dd>${fmt(d.cd18)} → ${fmt(d.cd)}</dd></div><div><dt>M5S 2018 → 2022</dt><dd>${fmt(d.m518)} → ${fmt(d.m5)}</dd></div></dl><h4>Scenario: ${state.preset}</h4><dl>${pair('Right model',rr(d))}${pair('Broad model',bb(d))}<div><dt>Gap: ${cmp(g)}</dt><dd>${Math.abs(g).toFixed(1)} pts</dd></div></dl><p class="detail-note">Region totals do not say who wins a single-member seat. The 2022 broad sum was not a ticket on the ballot.</p><button type="button" id="clear">Clear selection</button>`}
+ document.getElementById('clear').addEventListener('click',()=>select(null));
+}
+function renderTable(){document.getElementById('regions-body').innerHTML=D.map(d=>d.special?`<tr><td>${d.n}</td><td>Autonomists +8.8</td><td class="num">29.8%</td><td class="num special">n/a</td><td class="num special">n/a</td><td class="num special">n/a</td></tr>`:`<tr><td><button class="region-link" type="button" data-region="${d.c}">${d.n}</button></td><td>${d.actual} +${d.am.toFixed(1)}</td><td class="num">${fmt(d.cd)}</td><td class="num">${fmt(d.cs+d.m5)}</td><td class="num">+${(d.cd-d.cd18).toFixed(1)} pts</td><td class="num"><span class="sw" style="background:${grad(gap(d))}"></span>${signed(gap(d))} pts</td></tr>`).join('');for(const b of document.querySelectorAll('[data-region]'))b.addEventListener('click',()=>{select(b.dataset.region);document.getElementById('map-section').scrollIntoView({behavior:'smooth'})})}
+function render(){for(const p of paths){const d=by[p.dataset.c];p.style.fill=layers[state.layer].color(d)}for(const b of layerbox.querySelectorAll('[data-layer]'))b.setAttribute('aria-pressed',b.dataset.layer===state.layer);partySelect.hidden=state.layer!=='party';document.getElementById('scenario').classList.toggle('dim',!['proj','battle'].includes(state.layer));document.getElementById('swing-label').textContent=signed(state.shift)+' points';document.getElementById('scenario-label').textContent=`${state.preset} · now right ${fmt(state.right+state.shift)}, broad ${fmt(state.broad-state.shift)}`;const L=layers[state.layer];document.getElementById('legend').innerHTML=L.legend.map(([color,label])=>`<span><span class="sw" style="background:${color}"></span>${label}</span>`).join('');document.getElementById('layer-desc').textContent=L.description;renderPanel();renderTable()}
+render();
+})();
