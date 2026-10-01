@@ -4,6 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>France 2027 Election Map</title>
+<!-- og -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Europe Election Maps">
+<meta property="og:title" content="France 2027 Election Map">
+<meta property="og:description" content="Where each department leans, the battlegrounds, and the latest polls for the April 2027 presidential election.">
+<meta property="og:url" content="https://julienhovan.com/europe-elections/france/">
+<meta property="og:image" content="https://julienhovan.com/europe-elections/france/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /og -->
 <meta name="description" content="Polling, news, sentiment and a department-level interactive map of where France leans ahead of the April 2027 presidential election, as of 1 October 2026.">
 <style>:root {
 	color-scheme: dark;
@@ -200,6 +211,7 @@ table.compact { min-width: 100%; font-size: 13px; }
 .static-only svg { display: block; width: 100%; height: auto; }
 .static-only .static-note { font-size: 12.5px; color: var(--muted); margin: 6px 2px 0; }
 @media (max-width: 700px) {
+  .bars { grid-template-columns: minmax(0, 11em) minmax(48px, 1fr) max-content; gap: 8px 10px; }
   .layout { padding: 20px 12px 64px; }
   h1 { font-size: 24px; }
   .seg button, button, select { min-height: 36px; padding: 6px 10px; font-size: 13.5px; }
