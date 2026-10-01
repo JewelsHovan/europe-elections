@@ -1,0 +1,12 @@
+# Germany page
+
+From this directory, run `python3 process.py && python3 build.py`. Python needs `pyshp` (`python3 -m pip install --user --break-system-packages pyshp` on externally managed Homebrew Python). This writes `data.json`, `paths.json` and `../../germany/index.html`. The HTML inlines all data, geometry, CSS (including `../shared/base.css`), and JavaScript; it makes no viewing-time requests.
+
+## Raw official sources
+
+- `kerg2.csv`: [Die Bundeswahlleiterin, final 2025 Bundestag constituency results](https://www.bundeswahlleiterin.de/bundestagswahlen/2025/ergebnisse/opendata/btw25/csv/kerg2.csv), downloaded 1 Oct 2026. Contains 2021 comparisons recalculated to 2025 boundaries. Data licence: Deutschland – Namensnennung – Version 2.0. The first 10 CSV lines are the licence, metadata and header; data follow.
+- `geometry.zip`: [Die Bundeswahlleiterin, generalised WGS84 Wahlkreis shapefile](https://www.bundeswahlleiterin.de/dam/jcr/556bec9c-be80-4818-a368-fe6596f15f08/btw25_geometrie_wahlkreise_shp_geo.zip), downloaded 1 Oct 2026. © Die Bundeswahlleiterin, Statistisches Bundesamt, Wiesbaden 2024, Wahlkreiskarte für die Wahl zum 21. Deutschen Bundestag; Grundlage der Geoinformationen © Geobasis-DE / BKG 2024, Datenlizenz Deutschland – Namensnennung 2.0. `process.py` reads the ZIP without extraction and simplifies polygon paths at 0.8 displayed pixels. Original shapefile not kept outside the ZIP.
+
+Only these two files are downloaded raw data. 2026 polls are transcribed in `body.html`, with source links and field dates. The six latest distinct-pollster surveys at publication are ARD/Infratest dimap 1 Oct, INSA and Forsa 29 Sep, Forschungsgruppe Wahlen and Verian 25 Sep, and YouGov 15 Sep. The simple average excludes ARD and FGW for BSW (not separately reported). `process.py` stores the selected average and national 2025 base vote shares. Presets for Forsa and INSA are coded in `map.js`.
+
+Limitations: the page models first-vote candidate pluralities, not parliamentary seats; the local first-vote swing is the national second-vote point change and cannot represent new or withdrawn candidates, split-ticket trends, threshold effects, Land seat coverage or tactical voting. The second-vote projection similarly applies additive national party swings to local 2025 party shares, floored and renormalised. The 2021 layer is actual second-vote change. In 2026, Baden-Württemberg, Rhineland-Palatinate, Saxony-Anhalt, Berlin and Mecklenburg-Vorpommern all held Land elections; the latter two linked results were preliminary as checked 1 Oct.
