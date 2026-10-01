@@ -1,6 +1,6 @@
 # Country page spec
 
-Each country gets one self-contained page at `<country>/index.html` (for example `germany/index.html`). It is built from sources in `src/<country>/`. The site is published on GitHub Pages at `https://jewelshovan.github.io/europe-elections/`, and people will mostly open it on phones from a WhatsApp link.
+Each country gets one self-contained page at `<country>/index.html` (for example `germany/index.html`). It is built from sources in `src/<country>/`. The site is published on GitHub Pages at `https://julienhovan.com/europe-elections/`, and people will mostly open it on phones from a WhatsApp link.
 
 The reference implementation is France: `france/index.html`, built by `src/france/` (`parse.py` → `compute.py` → `geo.py` → `fill.py` → `build.py`; `map.js`, `extra.css`, `body.html`). Read it before starting. Match its structure, tone, styling and interaction model.
 
