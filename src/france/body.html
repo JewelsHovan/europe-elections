@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>France 2027 Election Map</title>
+<meta name="description" content="Polling, news, sentiment and a department-level interactive map of where France leans ahead of the April 2027 presidential election, as of 1 October 2026.">
+<style>%%STYLE%%</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="toc" aria-label="Contents">
+    <span class="label">On this page</span>
+    <a href="#state">State of the race</a>
+    <a href="#map-section">Interactive map</a>
+    <a href="#battlegrounds">Battlegrounds</a>
+    <a href="#regions">Regions</a>
+    <a href="#polls">Polling</a>
+    <a href="#sentiment">Sentiment</a>
+    <a href="#news">News this week</a>
+    <a href="#calendar">Calendar</a>
+    <a href="#method">Method and sources</a>
+  </nav>
+  <main>
+    <h1>France 2027 Election Map</h1>
+    <dl class="meta">
+      <div><dt>Status</dt><dd><span class="status warn">%%STATUS%%</span></dd></div>
+      <div><dt>Updated</dt><dd>1 Oct 2026</dd></div>
+      <div><dt>Election</dt><dd>%%DATES%%</dd></div>
+      <div><dt>Map data</dt><dd>Interior ministry results, 2022 and 2024, by department</dd></div>
+      <div><dt>Follows</dt><dd><code>french-election-2027-brief-2026-09-28.md</code></dd></div>
+    </dl>
+
+%%LEAD%%
+
+    <h2 id="map-section">Interactive map</h2>
+    <p>Each of the 96 metropolitan departments and 5 overseas departments is coloured by the layer you choose. Tap or click a department for its full record. The projected runoff layer is a model, not a poll: it takes each department's lean from its 2022 and 2024 results and shifts it to the national share you set with the slider.</p>
+
+    <div class="controls">
+      <div class="seg" id="layers" role="group" aria-label="Map layer"></div>
+      <div id="scenario-controls">
+        <span id="scen" role="radiogroup" aria-label="Runoff scenario">
+          <label><input type="radio" name="scen" value="phil" checked> Le Pen vs Philippe</label>
+          <label><input type="radio" name="scen" value="mel"> Le Pen vs Mélenchon</label>
+        </span>
+        <label>Le Pen national share <input type="range" id="nat" min="40" max="72" step="0.5" value="56"> <span id="nat-out">56%</span></label>
+        <span class="seg">
+%%PRESETS%%
+        </span>
+      </div>
+      <div id="pick-row" class="small"><label>Find a department <select id="pick"><option value="">(none)</option></select></label></div>
+    </div>
+
+    <div class="mapgrid">
+      <div>
+        <div id="mapwrap">
+%%STATIC%%
+          <svg id="map" class="live" role="img" aria-label="Map of French departments coloured by the selected layer"></svg>
+          <svg id="dom" class="live" role="img" aria-label="Overseas departments"></svg>
+          <div id="tip" hidden></div>
+        </div>
+        <div id="legend"></div>
+        <p id="layer-desc"></p>
+      </div>
+      <aside id="panel" aria-live="polite"></aside>
+    </div>
+
+    <div class="descs">
+      <span id="desc-proj">Model projection of the Le Pen share in each department for the scenario and national share set above. Toss-up means within 2 points of 50%.</span>
+      <span id="desc-flip">The national Le Pen share at which the department tips to her in a runoff against a centre-right opponent. Purple departments flip inside the range current polls span (50–56%).</span>
+      <span id="desc-lp22">Actual 2022 runoff: Le Pen 41.5% nationally against Macron. She led in 28 departments: all 5 overseas, plus 23 in the northeast, the Mediterranean rim, Corsica and the Garonne valley.</span>
+      <span id="desc-lead24">Which bloc led the first round of the June 2024 legislative election. The RN and its Ciotti allies led in 67 of 101 departments; the left led in the big cities, Paris and its inner suburbs, and the Southwest.</span>
+      <span id="desc-shift">Change in the far-right first-round vote: 2022 presidential (Le Pen + Zemmour + Dupont-Aignan) to 2024 legislative (RN + allies + Reconquête). The largest gains were in the rural Southwest. Corsica's drop reflects local candidates in 2024.</span>
+      <span id="desc-eu24">The RN list led by Jordan Bardella won 31.4% nationally in June 2024 and topped the poll in 92 of 96 metropolitan departments (all but Paris, Hauts-de-Seine, Seine-Saint-Denis and Val-de-Marne). Shading shows its share.</span>
+    </div>
+
+    <h2 id="battlegrounds">Battlegrounds</h2>
+%%BATTLE%%
+
+    <h2 id="regions">Regions</h2>
+    <p>Department projections rolled up to the 13 metropolitan regions and the overseas departments, weighted by registered voters. The table follows the scenario and slider above. <span class="muted" id="regions-scen"></span></p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Region</th><th class="num">Voters</th><th class="num">Le Pen 2022 R2</th><th class="num">RN bloc 2024</th><th class="num">Projected</th><th>Rating</th><th>Departments within 5 pts</th></tr></thead>
+        <tbody id="regions-body"></tbody>
+      </table>
+    </div>
+
+    <h2 id="polls">Polling</h2>
+%%POLLS%%
+
+    <h2 id="sentiment">Sentiment</h2>
+%%SENTIMENT%%
+
+    <h2 id="news">News this week</h2>
+%%NEWS%%
+
+    <h2 id="calendar">Calendar</h2>
+%%CALENDAR%%
+
+    <h2 id="method">Method and sources</h2>
+%%METHOD%%
+  </main>
+</div>
+<script type="application/json" id="elec-data">%%DATA%%</script>
+<script type="application/json" id="geo-data">%%GEO%%</script>
+<script>%%JS%%</script>
+<script>
+const tocLinks = [...document.querySelectorAll("nav.toc a")];
+const observer = new IntersectionObserver((entries) => {
+  for (const entry of entries) {
+    if (!entry.isIntersecting) continue;
+    for (const link of tocLinks) {
+      if (decodeURIComponent(link.hash.slice(1)) === entry.target.id) link.setAttribute("aria-current", "true");
+      else link.removeAttribute("aria-current");
+    }
+  }
+}, { rootMargin: "0px 0px -70% 0px" });
+for (const heading of document.querySelectorAll("main h2[id]")) observer.observe(heading);
+</script>
+</body>
+</html>
