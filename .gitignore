@@ -4,8 +4,6 @@ probe.html
 __pycache__/
 # country pages not yet reviewed
 /germany/
-/spain/
 /italy/
 /src/germany/
-/src/spain/
 /src/italy/

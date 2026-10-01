@@ -1,0 +1,8 @@
+# Spain page rebuild
+
+From this directory: `python3 compute.py && python3 geo.py && python3 build.py`. The output is `../../spain/index.html`. No packages beyond Python's standard library. All data, CSS and scripts are inlined at build time; browsing the output needs no network.
+
+- `results2023.csv`, `results2019.csv`: downloaded from http://www.electionresources.org/es/data/2023.csv and http://www.electionresources.org/es/data/2019.csv (provincial election tables transcribed from Spanish Interior Ministry / Central Electoral Commission records, 2023 preliminary / 2019 November definitive). Verified 2023's provincial D'Hondt seat allocations against all 52 archived seat totals and national PP 137, PSOE 121, Vox 33, Sumar 31.
+- `provinces.geojson`: https://raw.githubusercontent.com/codeforgermany/click_that_hood/master/public/data/spain-provinces.geojson (open community boundaries, not official IGN). `geo.py` makes `paths.json`, simplifies geometry and draws the Canary inset. Ceuta/Melilla are tiles because geographic polygons are too small to tap.
+- `compute.py` makes `data.json`; `build.py` inlines `src/shared/base.css`, `extra.css`, the static no-JS SVG, `map.js`, and data into the final page.
+- The September 2026 polling average and all news/sentiment sources are linked and dated directly in `body.html`. Fieldwork dates missing from the reports are explicitly marked unverified. The model does not implement legal coalition vote pooling, demographic swing or changes in district magnitude. The per-province 3% threshold uses all valid votes including blanks, and Ceuta/Melilla use first-past-the-post.
